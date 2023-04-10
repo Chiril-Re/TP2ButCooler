@@ -3,6 +3,7 @@ package server;
 
 import javafx.util.Pair;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -29,7 +30,7 @@ public class Server {
      * @param port le port auquel on veut attacher le serveur créé
      * @throws IOException Si la communication entre le client et le serveur a un problème (problème d'entrée/sortie)
      */
-    public Server(int port) throws IOException {
+    public Server(int port) throws IOException, FileNotFoundException {
         this.server = new ServerSocket(port, 1);
         this.handlers = new ArrayList<EventHandler>();
         this.addEventHandler(this::handleEvents);
@@ -129,7 +130,7 @@ public class Server {
      * @param cmd
      * @param arg
      */
-    public void handleEvents(String cmd, String arg) {
+    public void handleEvents(String cmd, String arg) throws FileNotFoundException, IOException{
         if (cmd.equals(REGISTER_COMMAND)) {
             handleRegistration();
         } else if (cmd.equals(LOAD_COMMAND)) {
@@ -144,7 +145,7 @@ public class Server {
      @param arg la session pour laquelle on veut récupérer la liste des cours
      @throws Exception si une erreur se produit lors de la lecture du fichier ou de l'écriture de l'objet dans le flux
      */
-    public void handleLoadCourses(String arg) {
+    public void handleLoadCourses(String arg) throws FileNotFoundException, IOException{
         // TODO: implémenter cette méthode
     }
 
@@ -153,7 +154,7 @@ public class Server {
      et renvoyer un message de confirmation au client.
      @throws Exception si une erreur se produit lors de la lecture de l'objet, l'écriture dans un fichier ou dans le flux de sortie.
      */
-    public void handleRegistration() {
+    public void handleRegistration() throws FileNotFoundException, IOException {
         // TODO: implémenter cette méthode
     }
 }
