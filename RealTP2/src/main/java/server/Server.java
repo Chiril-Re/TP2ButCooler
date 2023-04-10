@@ -2,15 +2,22 @@ package server;
 
 
 import javafx.util.Pair;
+import server.models.*;
 
-import java.io.FileNotFoundException;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Scanner;
+
+import javax.imageio.stream.ImageOutputStreamImpl;
 
 /**
  * Classe du serveur
@@ -30,7 +37,7 @@ public class Server {
      * @param port le port auquel on veut attacher le serveur créé
      * @throws IOException Si la communication entre le client et le serveur a un problème (problème d'entrée/sortie)
      */
-    public Server(int port) throws IOException, FileNotFoundException {
+    public Server(int port) throws IOException {
         this.server = new ServerSocket(port, 1);
         this.handlers = new ArrayList<EventHandler>();
         this.addEventHandler(this::handleEvents);
@@ -41,7 +48,7 @@ public class Server {
      * Fait appel à la fonction notable : Serveur.handlers.add(EventHandler)
      * @param h Le handler en question, voir la classe EventHandler
      */
-    public void addEventHandler(EventHandler h) {
+    public void addEventHandler(EventHandler h) throws IOException {
         this.handlers.add(h);
     }
 
@@ -130,7 +137,7 @@ public class Server {
      * @param cmd
      * @param arg
      */
-    public void handleEvents(String cmd, String arg) throws FileNotFoundException, IOException{
+    public void handleEvents(String cmd, String arg) throws IOException, ClassNotFoundException{
         if (cmd.equals(REGISTER_COMMAND)) {
             handleRegistration();
         } else if (cmd.equals(LOAD_COMMAND)) {
@@ -145,8 +152,27 @@ public class Server {
      @param arg la session pour laquelle on veut récupérer la liste des cours
      @throws Exception si une erreur se produit lors de la lecture du fichier ou de l'écriture de l'objet dans le flux
      */
-    public void handleLoadCourses(String arg) throws FileNotFoundException, IOException{
-        // TODO: implémenter cette méthode
+    public void handleLoadCourses(String arg) throws IOException{
+        ArrayList<Course> courses = new ArrayList<>();
+        String coursesString = "";
+        try {
+            File cours = new File("./data/cours.txt");
+            Scanner reader = new Scanner(cours);
+            while (reader.hasNextLine()){
+                String line = reader.nextLine();
+                String[] data = line.split(" ");
+                Course course = new Course(data[1], data[0], data[2]);
+                courses.add(course);
+            }
+            reader.close();
+            for (int i = courses.size(); i > 0 ; i--){
+                coursesString += courses.get(i).toString() + "\n";
+            }
+            objectOutputStream.writeUTF(coursesString);
+        } catch (IOException e) {
+            System.out.println("Error : ");
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -154,8 +180,21 @@ public class Server {
      et renvoyer un message de confirmation au client.
      @throws Exception si une erreur se produit lors de la lecture de l'objet, l'écriture dans un fichier ou dans le flux de sortie.
      */
-    public void handleRegistration() throws FileNotFoundException, IOException {
-        // TODO: implémenter cette méthode
+    public void handleRegistration() throws IOException, ClassNotFoundException{
+        String inscriptionString = "";
+        try {
+            RegistrationForm input = (RegistrationForm) objectInputStream.readObject();
+            FileWriter printer = new FileWriter("./data/inscription.txt");
+            inscriptionString += input.getCourse().getSession() + "\t" + input.getCourse().getCode() + "\t" +
+                                    input.getMatricule() + "\t" + input.getPrenom() + "\t" +
+                                    input.getNom() + "\t" + input.getEmail();
+            printer.write(inscriptionString);
+            printer.close();
+        } catch (IOException e) {
+            System.out.println(" Error : ");
+            e.printStackTrace();
+        }
+
     }
 }
 
