@@ -40,7 +40,18 @@ public class Server {
     public Server(int port) throws IOException {
         this.server = new ServerSocket(port, 1);
         this.handlers = new ArrayList<EventHandler>();
-        this.addEventHandler(this::handleEvents);
+        this.addEventHandler((cmd, arg) -> {
+            try {
+                handleEvents(cmd, arg);
+            } catch (ClassNotFoundException e) {
+                // TODO
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO
+                e.printStackTrace();
+            }
+        });
+
     }
 
     /**
